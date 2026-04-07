@@ -1,92 +1,190 @@
 using System;
+using System.Collections.Generic;
 
-	public class Program
-	{
-		public static void Main(string[] args)
-		{
-			// ============================
-        // DECLARACIÓN DE VARIABLES
-        // ============================
+class Proyecto
+{
+    // ============================
+    // CONSTANTES (SIN NÚMEROS MÁGICOS)
+    // ============================
+    const decimal LIMITE_ENVIO_GRATIS = 150000;
+    const decimal LIMITE_ENVIO_EXPRESS = 300000;
+    const int LIMITE_ITEMS = 5;
 
-        // decimal para dinero (mayor precisión en valores monetarios)
-        decimal montoPedido;
+    const decimal COSTO_GRATIS = 0;
+    const decimal COSTO_EXPRESS = 20000;
+    const decimal COSTO_ESTANDAR = 10000;
+    const decimal COSTO_EXTERIOR = 15000;
 
-        // string para datos textuales
-        string ciudadDestino;
-        string tipoCliente;
+    // ============================
+    // LISTAS (ALMACENAMIENTO)
+    // ============================
+    static List<decimal> listaMontos = new List<decimal>();
+    static List<string> listaClientes = new List<string>();
+    static List<int> listaItems = new List<int>();
+    static List<string> listaCiudades = new List<string>();
+    static List<string> listaCategorias = new List<string>();
 
-        // int para cantidades enteras
-        int cantidadItems;
+    static void Main(string[] args)
+    {
+        int opcion;
 
-        // Variables de salida
-        string categoriaDespacho;
-        decimal costoEnvio = 0;
-
-        // ============================
-        // ENTRADA DE DATOS
-        // ============================
-
-        Console.WriteLine("=== SISTEMA DE CLASIFICACIÓN DE PEDIDOS ===");
-
-        Console.Write("Ingrese el monto del pedido: ");
-        montoPedido = Convert.ToDecimal(Console.ReadLine());
-
-        Console.Write("Ingrese la ciudad destino: ");
-        ciudadDestino = Console.ReadLine();
-
-        Console.Write("Ingrese el tipo de cliente (nuevo / recurrente): ");
-        tipoCliente = Console.ReadLine().ToLower();
-
-        Console.Write("Ingrese la cantidad de items: ");
-        cantidadItems = Convert.ToInt32(Console.ReadLine());
-
-        // ============================
-        // LÓGICA PRINCIPAL
-        // ============================
-
-        /*
-         Orden de evaluación de reglas:
-         1. Envío gratis (prioridad más alta)
-         2. Envío express
-         3. Envío estándar (caso por defecto)
-        */
-
-        // REGLA 1: Envío gratis
-        if (montoPedido >= 150000 && tipoCliente == "recurrente")
+        do
         {
-            categoriaDespacho = "Envío Gratis";
-            costoEnvio = 0;
-        }
-        // REGLA 2: Envío express
-        else if (cantidadItems > 5 || montoPedido >= 300000)
+            opcion = MostrarMenu();
+
+            switch (opcion)
+            {
+                case 1:
+                    RegistrarPedido();
+                    break;
+
+                case 2:
+                    MostrarReportes();
+                    break;
+
+                case 3:
+                    Console.WriteLine("Saliendo del sistema...");
+                    break;
+
+                default:
+                    Console.WriteLine("Opción inválida.");
+                    break;
+            }
+
+        } while (opcion != 3);
+    }
+
+    // ============================
+    // MENÚ
+    // ============================
+    static int MostrarMenu()
+    {
+        Console.WriteLine("\n=== MENÚ PRINCIPAL ===");
+        Console.WriteLine("1. Registrar pedido");
+        Console.WriteLine("2. Ver reportes");
+        Console.WriteLine("3. Salir");
+        Console.Write("Seleccione una opción: ");
+
+        return Convert.ToInt32(Console.ReadLine());
+    }
+
+    // ============================
+    // REGISTRAR PEDIDO
+    // ============================
+   static void RegistrarPedido()
+{
+    Console.WriteLine("\n=== REGISTRO DE PEDIDO ===");
+
+    decimal monto;
+    while (true)
+    {
+        Console.Write("Monto del pedido: ");
+        if (decimal.TryParse(Console.ReadLine(), out monto) && monto >= 0)
+            break;
+        else
+            Console.WriteLine("Error: Ingrese un número válido.");
+    }
+
+    string ciudad;
+    while (true)
+    {
+        Console.Write("Ciudad destino: ");
+        ciudad = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(ciudad))
+            break;
+        else
+            Console.WriteLine("Error: No puede estar vacío.");
+    }
+
+    string cliente;
+    while (true)
+    {
+        Console.Write("Tipo de cliente (nuevo/recurrente): ");
+        cliente = Console.ReadLine().ToLower();
+        if (cliente == "nuevo" || cliente == "recurrente")
+            break;
+        else
+            Console.WriteLine("Error: Escriba 'nuevo' o 'recurrente'.");
+    }
+
+    int items;
+    while (true)
+    {
+        Console.Write("Cantidad de items: ");
+        if (int.TryParse(Console.ReadLine(), out items) && items >= 0)
+            break;
+        else
+            Console.WriteLine("Error: Ingrese un número entero válido.");
+    }
+
+    string categoria = CalcularCategoria(monto, cliente, items);
+
+    listaMontos.Add(monto);
+    listaClientes.Add(cliente);
+    listaItems.Add(items);
+    listaCiudades.Add(ciudad);
+    listaCategorias.Add(categoria);
+
+    Console.WriteLine($"Pedido registrado como: {categoria}");
+}
+
+    // ============================
+    // LÓGICA DE NEGOCIO
+    // ============================
+    static string CalcularCategoria(decimal monto, string cliente, int items)
+    {
+        if (monto >= LIMITE_ENVIO_GRATIS && cliente == "recurrente")
         {
-            categoriaDespacho = "Envío Express";
-            costoEnvio = 20000;
+            return "Envío Gratis";
         }
-        // REGLA 3: Envío estándar
+        else if (items > LIMITE_ITEMS || monto >= LIMITE_ENVIO_EXPRESS)
+        {
+            return "Envío Express";
+        }
         else
         {
-            categoriaDespacho = "Envío Estándar";
-            costoEnvio = 10000;
+            return "Envío Estándar";
         }
+    }
 
-        // ============================
-        // REGLA ADICIONAL
-        // ============================
+    // ============================
+    // REPORTES
+    // ============================
+    static void MostrarReportes()
+    {
+        Console.WriteLine("\n=== REPORTES ===");
 
-        // Si la ciudad es "exterior", se agrega un costo adicional
-        if (ciudadDestino == "exterior")
+        if (listaMontos.Count == 0)
         {
-            costoEnvio = costoEnvio + 15000; // operador aritmético +
+            Console.WriteLine("No hay pedidos registrados.");
+            return;
         }
 
-        // ============================
-        // SALIDA DE INFORMACIÓN
-        // ============================
+        int totalPedidos = listaMontos.Count;
+        decimal suma = 0;
 
-        Console.WriteLine("\n=== RESULTADO DEL PEDIDO ===");
-        Console.WriteLine($"Categoría de despacho: {categoriaDespacho}");
-        Console.WriteLine($"Costo total de envío: ${costoEnvio}");
-        Console.WriteLine("Gracias por utilizar el sistema.");
+        int gratis = 0;
+        int express = 0;
+        int estandar = 0;
+
+        foreach (var monto in listaMontos)
+        {
+            suma += monto;
+        }
+
+        foreach (var categoria in listaCategorias)
+        {
+            if (categoria == "Envío Gratis") gratis++;
+            else if (categoria == "Envío Express") express++;
+            else estandar++;
+        }
+
+        decimal promedio = suma / totalPedidos;
+
+        Console.WriteLine($"Total pedidos: {totalPedidos}");
+        Console.WriteLine($"Promedio de monto: {promedio}");
+        Console.WriteLine($"Envíos Gratis: {gratis}");
+        Console.WriteLine($"Envíos Express: {express}");
+        Console.WriteLine($"Envíos Estándar: {estandar}");
     }
 }
