@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// Sistema de clasificación de pedidos para una tienda en línea.
+/// Permite registrar pedidos y generar reportes.
+/// </summary>
 class Proyecto
 {
     // ============================
-    // CONSTANTES (SIN NÚMEROS MÁGICOS)
+    // CONSTANTES
     // ============================
     const decimal LIMITE_ENVIO_GRATIS = 150000;
     const decimal LIMITE_ENVIO_EXPRESS = 300000;
     const int LIMITE_ITEMS = 5;
 
-    const decimal COSTO_GRATIS = 0;
-    const decimal COSTO_EXPRESS = 20000;
-    const decimal COSTO_ESTANDAR = 10000;
-    const decimal COSTO_EXTERIOR = 15000;
-
     // ============================
-    // LISTAS (ALMACENAMIENTO)
+    // LISTAS
     // ============================
     static List<decimal> listaMontos = new List<decimal>();
     static List<string> listaClientes = new List<string>();
@@ -24,7 +23,22 @@ class Proyecto
     static List<string> listaCiudades = new List<string>();
     static List<string> listaCategorias = new List<string>();
 
+    // ============================
+    // MAIN
+    // ============================
     static void Main(string[] args)
+    {
+        EjecutarSistema();
+    }
+
+    // ============================
+    // ORQUESTACIÓN
+    // ============================
+
+    /// <summary>
+    /// Controla el flujo principal del sistema.
+    /// </summary>
+    static void EjecutarSistema()
     {
         int opcion;
 
@@ -57,99 +71,199 @@ class Proyecto
     // ============================
     // MENÚ
     // ============================
+
+    /// <summary>
+    /// Muestra el menú principal y retorna la opción seleccionada.
+    /// </summary>
+    /// <returns>Opción ingresada por el usuario.</returns>
     static int MostrarMenu()
     {
-        Console.WriteLine("\n=== MENÚ PRINCIPAL ===");
-        Console.WriteLine("1. Registrar pedido");
-        Console.WriteLine("2. Ver reportes");
-        Console.WriteLine("3. Salir");
-        Console.Write("Seleccione una opción: ");
+        int opcion;
 
-        return Convert.ToInt32(Console.ReadLine());
+        while (true)
+        {
+            Console.WriteLine("\n=== MENÚ PRINCIPAL ===");
+            Console.WriteLine("1. Registrar pedido");
+            Console.WriteLine("2. Ver reportes");
+            Console.WriteLine("3. Salir");
+            Console.Write("Seleccione una opción: ");
+
+            if (int.TryParse(Console.ReadLine(), out opcion))
+            {
+                return opcion;
+            }
+
+            Console.WriteLine("Error: Ingrese una opción válida.");
+        }
     }
 
     // ============================
-    // REGISTRAR PEDIDO
+    // REGISTRO DE PEDIDOS
     // ============================
-   static void RegistrarPedido()
-{
-    Console.WriteLine("\n=== REGISTRO DE PEDIDO ===");
 
-    decimal monto;
-    while (true)
+    /// <summary>
+    /// Registra un pedido en el sistema.
+    /// </summary>
+    static void RegistrarPedido()
     {
-        Console.Write("Monto del pedido: ");
-        if (decimal.TryParse(Console.ReadLine(), out monto) && monto >= 0)
-            break;
-        else
-            Console.WriteLine("Error: Ingrese un número válido.");
+        Console.WriteLine("\n=== REGISTRO DE PEDIDO ===");
+
+        decimal monto = LeerMonto();
+        string ciudad = LeerCiudad();
+        string cliente = LeerTipoCliente();
+        int items = LeerCantidadItems();
+
+        string categoria = CalcularCategoria(monto, cliente, items);
+
+        GuardarPedido(monto, ciudad, cliente, items, categoria);
+
+        Console.WriteLine($"Pedido registrado como: {categoria}");
     }
 
-    string ciudad;
-    while (true)
+    // ============================
+    // FUNCIONES DE ENTRADA
+    // ============================
+
+    /// <summary>
+    /// Solicita y valida el monto del pedido.
+    /// </summary>
+    /// <returns>Monto válido.</returns>
+    static decimal LeerMonto()
     {
-        Console.Write("Ciudad destino: ");
-        ciudad = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(ciudad))
-            break;
-        else
-            Console.WriteLine("Error: No puede estar vacío.");
+        decimal monto;
+
+        while (true)
+        {
+            Console.Write("Monto del pedido: ");
+
+            if (decimal.TryParse(Console.ReadLine(), out monto) && monto >= 0)
+            {
+                return monto;
+            }
+
+            Console.WriteLine("Error: Ingrese un monto válido.");
+        }
     }
 
-    string cliente;
-    while (true)
+    /// <summary>
+    /// Solicita y valida la ciudad destino.
+    /// </summary>
+    /// <returns>Ciudad válida.</returns>
+    static string LeerCiudad()
     {
-        Console.Write("Tipo de cliente (nuevo/recurrente): ");
-        cliente = Console.ReadLine().ToLower();
-        if (cliente == "nuevo" || cliente == "recurrente")
-            break;
-        else
+        string ciudad;
+
+        while (true)
+        {
+            Console.Write("Ciudad destino: ");
+            ciudad = Console.ReadLine();
+
+            if (!string.IsNullOrWhiteSpace(ciudad))
+            {
+                return ciudad;
+            }
+
+            Console.WriteLine("Error: La ciudad no puede estar vacía.");
+        }
+    }
+
+    /// <summary>
+    /// Solicita y valida el tipo de cliente.
+    /// </summary>
+    /// <returns>Tipo de cliente válido.</returns>
+    static string LeerTipoCliente()
+    {
+        string cliente;
+
+        while (true)
+        {
+            Console.Write("Tipo de cliente (nuevo/recurrente): ");
+            cliente = Console.ReadLine().ToLower();
+
+            if (cliente == "nuevo" || cliente == "recurrente")
+            {
+                return cliente;
+            }
+
             Console.WriteLine("Error: Escriba 'nuevo' o 'recurrente'.");
+        }
     }
 
-    int items;
-    while (true)
+    /// <summary>
+    /// Solicita y valida la cantidad de artículos.
+    /// </summary>
+    /// <returns>Cantidad válida de artículos.</returns>
+    static int LeerCantidadItems()
     {
-        Console.Write("Cantidad de items: ");
-        if (int.TryParse(Console.ReadLine(), out items) && items >= 0)
-            break;
-        else
-            Console.WriteLine("Error: Ingrese un número entero válido.");
+        int items;
+
+        while (true)
+        {
+            Console.Write("Cantidad de items: ");
+
+            if (int.TryParse(Console.ReadLine(), out items) && items >= 0)
+            {
+                return items;
+            }
+
+            Console.WriteLine("Error: Ingrese una cantidad válida.");
+        }
     }
-
-    string categoria = CalcularCategoria(monto, cliente, items);
-
-    listaMontos.Add(monto);
-    listaClientes.Add(cliente);
-    listaItems.Add(items);
-    listaCiudades.Add(ciudad);
-    listaCategorias.Add(categoria);
-
-    Console.WriteLine($"Pedido registrado como: {categoria}");
-}
 
     // ============================
     // LÓGICA DE NEGOCIO
     // ============================
+
+    /// <summary>
+    /// Calcula la categoría de envío según las reglas del negocio.
+    /// </summary>
+    /// <param name="monto">Monto total del pedido.</param>
+    /// <param name="cliente">Tipo de cliente.</param>
+    /// <param name="items">Cantidad de artículos.</param>
+    /// <returns>Categoría de envío.</returns>
     static string CalcularCategoria(decimal monto, string cliente, int items)
     {
         if (monto >= LIMITE_ENVIO_GRATIS && cliente == "recurrente")
         {
             return "Envío Gratis";
         }
-        else if (items > LIMITE_ITEMS || monto >= LIMITE_ENVIO_EXPRESS)
+
+        if (items > LIMITE_ITEMS || monto >= LIMITE_ENVIO_EXPRESS)
         {
             return "Envío Express";
         }
-        else
-        {
-            return "Envío Estándar";
-        }
+
+        return "Envío Estándar";
+    }
+
+    // ============================
+    // ALMACENAMIENTO
+    // ============================
+
+    /// <summary>
+    /// Guarda un pedido en las listas del sistema.
+    /// </summary>
+    /// <param name="monto">Monto total del pedido.</param>
+    /// <param name="ciudad">Ciudad destino del pedido.</param>
+    /// <param name="cliente">Tipo de cliente.</param>
+    /// <param name="items">Cantidad de artículos.</param>
+    /// <param name="categoria">Categoría de envío calculada.</param>
+    static void GuardarPedido(decimal monto, string ciudad, string cliente, int items, string categoria)
+    {
+        listaMontos.Add(monto);
+        listaCiudades.Add(ciudad);
+        listaClientes.Add(cliente);
+        listaItems.Add(items);
+        listaCategorias.Add(categoria);
     }
 
     // ============================
     // REPORTES
     // ============================
+
+    /// <summary>
+    /// Muestra las estadísticas generales del sistema.
+    /// </summary>
     static void MostrarReportes()
     {
         Console.WriteLine("\n=== REPORTES ===");
@@ -160,31 +274,66 @@ class Proyecto
             return;
         }
 
-        int totalPedidos = listaMontos.Count;
-        decimal suma = 0;
+        int totalPedidos = ObtenerTotalPedidos();
+        decimal promedio = CalcularPromedioMontos();
 
-        int gratis = 0;
-        int express = 0;
-        int estandar = 0;
-
-        foreach (var monto in listaMontos)
-        {
-            suma += monto;
-        }
-
-        foreach (var categoria in listaCategorias)
-        {
-            if (categoria == "Envío Gratis") gratis++;
-            else if (categoria == "Envío Express") express++;
-            else estandar++;
-        }
-
-        decimal promedio = suma / totalPedidos;
+        int gratis = ContarCategoria("Envío Gratis");
+        int express = ContarCategoria("Envío Express");
+        int estandar = ContarCategoria("Envío Estándar");
 
         Console.WriteLine($"Total pedidos: {totalPedidos}");
         Console.WriteLine($"Promedio de monto: {promedio}");
         Console.WriteLine($"Envíos Gratis: {gratis}");
         Console.WriteLine($"Envíos Express: {express}");
         Console.WriteLine($"Envíos Estándar: {estandar}");
+    }
+
+    // ============================
+    // FUNCIONES DE CÁLCULO
+    // ============================
+
+    /// <summary>
+    /// Obtiene el total de pedidos registrados.
+    /// </summary>
+    /// <returns>Total de pedidos.</returns>
+    static int ObtenerTotalPedidos()
+    {
+        return listaMontos.Count;
+    }
+
+    /// <summary>
+    /// Calcula el promedio de montos registrados.
+    /// </summary>
+    /// <returns>Promedio de montos.</returns>
+    static decimal CalcularPromedioMontos()
+    {
+        decimal suma = 0;
+
+        foreach (decimal monto in listaMontos)
+        {
+            suma += monto;
+        }
+
+        return suma / listaMontos.Count;
+    }
+
+    /// <summary>
+    /// Cuenta cuántos pedidos pertenecen a una categoría específica.
+    /// </summary>
+    /// <param name="categoria">Categoría de envío a contar.</param>
+    /// <returns>Cantidad de pedidos encontrados.</returns>
+    static int ContarCategoria(string categoria)
+    {
+        int contador = 0;
+
+        foreach (string item in listaCategorias)
+        {
+            if (item == categoria)
+            {
+                contador++;
+            }
+        }
+
+        return contador;
     }
 }
