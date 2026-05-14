@@ -262,7 +262,7 @@ class Proyecto
     // ============================
 
     /// <summary>
-    /// Muestra las estadísticas generales del sistema.
+    /// Muestra las estadísticas generales y reportes del sistema.
     /// </summary>
     static void MostrarReportes()
     {
