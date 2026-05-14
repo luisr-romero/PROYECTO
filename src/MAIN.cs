@@ -93,7 +93,7 @@ class Proyecto
                 return opcion;
             }
 
-            Console.WriteLine("Error: Ingrese una opción válida.");
+            Console.WriteLine("Error: Debe ingresar un monto numérico válido.");
         }
     }
 
